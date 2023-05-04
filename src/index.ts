@@ -1,3 +1,8 @@
-import AudioPlayer from './components/App'
+import AudioPlayer from './components/AudioPlayer'
 
-export { AudioPlayer }
+const returnLibrary = () => {
+  return {
+    AudioPlayer,
+  }
+}
+export default returnLibrary()
