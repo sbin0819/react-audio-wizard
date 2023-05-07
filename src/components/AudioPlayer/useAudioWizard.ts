@@ -2,13 +2,13 @@ import { useEffect, useState, useCallback } from 'react'
 
 import getBlobDuration from 'get-blob-duration'
 
-type AudioStatus = 'idle' | 'playing' | 'paused'
+type AudioStatus = 'idle' | 'loaded' | 'playing' | 'paused'
 
 type useAudioType = {
   url: string
 }
 
-export default function useAudioWizard({ url }: useAudioType) {
+export default function useAudio({ url }: useAudioType) {
   const [audio] = useState(new Audio(url))
   let intervalId: NodeJS.Timeout
   const [audioReady, setAudioReady] = useState(false)
@@ -46,6 +46,7 @@ export default function useAudioWizard({ url }: useAudioType) {
 
     if (audio) {
       audio.load()
+      setStatus('loaded')
       audio.addEventListener('loadeddata', loadedDataHandler)
     }
     return () => {
