@@ -1,3 +1,3 @@
-import AudioPlayer from './components/AudioPlayer'
+import useAudioWizard from './components/AudioPlayer/useAudioWizard'
 
-export { AudioPlayer }
+export { useAudioWizard }
