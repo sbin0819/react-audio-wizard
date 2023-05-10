@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 
 import getBlobDuration from 'get-blob-duration'
 
@@ -8,9 +8,9 @@ type useAudioType = {
   url: string
 }
 
-export default function useAudio({ url }: useAudioType) {
+export default function useAudioWizard({ url }: useAudioType) {
   const [audio] = useState(new Audio(url))
-  let intervalId: NodeJS.Timeout
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null)
   const [audioReady, setAudioReady] = useState(false)
   const [status, setStatus] = useState<AudioStatus>('idle')
 
@@ -60,15 +60,29 @@ export default function useAudio({ url }: useAudioType) {
     }
     if (status === 'playing') {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      intervalId = setInterval(intervalHandler, 300)
+      intervalIdRef.current = setInterval(intervalHandler, 300)
     } else {
-      clearInterval(intervalId)
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current)
+      }
     }
 
     return () => {
-      clearInterval(intervalId)
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current)
+      }
     }
-  }, [status, audio])
+  }, [status, audio, currentTime, duration])
+
+  useEffect(() => {
+    if (currentTime >= duration) {
+      setStatus('loaded')
+      setCurrentTime(duration)
+    }
+    if (intervalIdRef.current && (audio?.ended || audio?.paused)) {
+      clearInterval(intervalIdRef.current)
+    }
+  }, [audio?.ended, audio?.paused, currentTime, duration])
 
   const play = useCallback(() => {
     if (audio) {
@@ -84,10 +98,37 @@ export default function useAudio({ url }: useAudioType) {
     }
   }, [audio])
 
+  const handleAudioSeek = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const seekTime = +e.target.value
+      if (typeof audio?.currentTime === 'number') {
+        audio.currentTime = seekTime
+        setCurrentTime(seekTime)
+        audio.pause()
+      }
+    },
+    [audio],
+  )
+
+  const handleSeek = useCallback(
+    ({ seekTime }: { seekTime: number }) => {
+      if (typeof audio?.currentTime === 'number' && seekTime < duration) {
+        audio.currentTime = seekTime
+        setCurrentTime(seekTime)
+        audio.pause()
+      } else {
+        console.log('seekTime is greater than duration')
+      }
+    },
+    [audio, duration],
+  )
+
   return {
     status,
     play,
     pause,
+    handleSeek,
+    handleAudioSeek,
     duration,
     currentTime,
   }
