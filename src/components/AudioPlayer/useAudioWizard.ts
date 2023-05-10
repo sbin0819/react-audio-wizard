@@ -9,13 +9,19 @@ type useAudioType = {
 }
 
 export default function useAudioWizard({ url }: useAudioType) {
-  const [audio] = useState(new Audio(url))
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null)
   const [audioReady, setAudioReady] = useState(false)
   const [status, setStatus] = useState<AudioStatus>('idle')
 
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
+
+  useEffect(() => {
+    if (!audio) {
+      setAudio(new Audio(url))
+    }
+  }, [audio, url])
 
   useEffect(() => {
     const fetchDuration = async () => {
@@ -26,8 +32,10 @@ export default function useAudioWizard({ url }: useAudioType) {
         setDuration(durationFetched)
       }
     }
-    fetchDuration()
-  }, [url])
+    if (audio) {
+      fetchDuration()
+    }
+  }, [audio, url])
 
   useEffect(() => {
     const loadedDataHandler = () => {
@@ -55,15 +63,17 @@ export default function useAudioWizard({ url }: useAudioType) {
   }, [audio, audioReady])
 
   useEffect(() => {
-    const intervalHandler = () => {
-      setCurrentTime(audio.currentTime || 0)
-    }
-    if (status === 'playing') {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      intervalIdRef.current = setInterval(intervalHandler, 300)
-    } else {
-      if (intervalIdRef.current) {
-        clearInterval(intervalIdRef.current)
+    if (audio) {
+      const intervalHandler = () => {
+        setCurrentTime(audio.currentTime || 0)
+      }
+      if (status === 'playing') {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        intervalIdRef.current = setInterval(intervalHandler, 300)
+      } else {
+        if (intervalIdRef.current) {
+          clearInterval(intervalIdRef.current)
+        }
       }
     }
 
