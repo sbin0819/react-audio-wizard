@@ -7,6 +7,9 @@ A simple, customizable and headless audio player for React applications. This li
 ```bash
 npm install react-audio-wizard // or yarn
 ```
+## Demo
+
+[CodeSandbox](https://codesandbox.io/s/react-audio-wizard-3lqbe7?file=/tsconfig.json)
 
 ## Usage
 
