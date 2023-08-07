@@ -18,7 +18,7 @@ export default function useAudioWizard({ url }: useAudioType) {
   const [currentTime, setCurrentTime] = useState(0)
 
   useEffect(() => {
-    if (!audio) {
+    if (!audio && !!url) {
       setAudio(new Audio(url))
     }
   }, [audio, url])
